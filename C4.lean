@@ -44,3 +44,14 @@ instance : Mul Even where
 
 #eval (Even.double 1 * Even.double 2)
 #eval (Even.double 0 * Even.double 2)
+
+instance : OfNat Even Nat.zero where
+  ofNat := Even.double 0
+
+instance [OfNat Even n] : OfNat Even (Nat.succ (Nat.succ n)) where
+  ofNat := Even.double (Nat.succ (OfNat.ofNat n : Even).half)
+
+#eval (0 : Even)
+#eval (2 : Even)
+#eval (100 : Even)
+#eval (254 : Even)

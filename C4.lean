@@ -53,5 +53,20 @@ instance [OfNat Even n] : OfNat Even (Nat.succ (Nat.succ n)) where
 
 #eval (0 : Even)
 #eval (2 : Even)
-#eval (100 : Even)
-#eval (254 : Even)
+-- #eval (100 : Even)
+-- #eval (254 : Even)
+
+#check HAdd.hAdd 5
+
+structure PPoint (α : Type) where
+  x : α
+  y : α
+deriving Repr
+
+#eval PPoint.mk 1.0 2
+
+instance [HMul α α α]: HMul (PPoint α) α (PPoint α) where
+  hMul p c := { x := p.x * c, y := p.y * c }
+
+#eval {x := 2.5, y := 3.7 : PPoint Float} * 2.0
+

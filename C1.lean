@@ -40,7 +40,7 @@ def last {α : Type} (xs : List α) : Option α :=
   | [] => none
   | [x] => some x
   | _ :: xs => last xs
-  
+
 example : last [1, 2, 3] = some 3 := rfl
 
 def List.findFirst? {α : Type} (xs : List α) (predicate : α → Bool) : Option α :=
@@ -60,7 +60,7 @@ def Prod.swap {α β : Type} (p : α × β) : β × α :=
 
 def distr_prod_sum (x : α × (β ⊕ γ)) : α × β ⊕ α × γ :=
   match x.snd with
-  | Sum.inl beta =>  Sum.inl (x.fst,beta) 
+  | Sum.inl beta =>  Sum.inl (x.fst,beta)
   | Sum.inr gamma => Sum.inr (x.fst, gamma)
 
 def sum_of_2_mul : Bool × α → α ⊕ α :=

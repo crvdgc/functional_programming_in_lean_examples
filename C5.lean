@@ -59,6 +59,10 @@ def Many.fromList : List α → Many α
   | [] => Many.none
   | x :: xs => Many.cons x (Many.fromList xs)
 
+def Many.toList : Many α → List α
+  | Many.none => []
+  | Many.more x xs => x :: (xs ()).toList
+
 def Many.take : Nat → Many α → List α
   | 0, _ => []
   | _ + 1, Many.none => []
@@ -75,3 +79,78 @@ def Many.bind : Many α → (α → Many β) → Many β
 instance : Monad Many where
  pure := Many.one
  bind := Many.bind
+
+theorem many_union_none_eq : Many.union x Many.none = x := by
+  induction x with
+  | none => rfl
+  | more x xs ih =>
+    unfold Many.union
+    unfold Many.cons
+    simp
+    rw [ih]
+
+theorem many_none_union_eq : Many.union Many.none x = x := by
+  unfold Many.union
+  rfl
+
+theorem many_bind_none_eq_none : Many.bind Many.none f = Many.none := by
+  unfold Many.bind
+  rfl
+
+theorem many_monad_identity_left : Many.bind (Many.one v) f = f v := by
+  unfold Many.one
+  unfold Many.bind
+  unfold Many.cons
+  simp
+  unfold Many.bind
+  rw [many_union_none_eq]
+
+theorem many_moand_identity_right : Many.bind x Many.one = x := by
+  induction x with
+  | none => rw [many_bind_none_eq_none]
+  | more x xs ih =>
+    unfold Many.bind
+    unfold Many.union
+    unfold Many.one
+    unfold Many.cons
+    simp
+    rw [many_none_union_eq]
+    unfold Many.one at ih
+    unfold Many.cons at ih
+    rw [ih]
+
+theorem many_bind_more : Many.bind (Many.more x xs) f = (f x).union (Many.bind (xs ()) f) := by
+  rfl
+
+theorem many_union_more : Many.union (Many.more x xs) ys = Many.more x (fun () => Many.union (xs ()) ys) := by
+  rfl
+
+#eval (Many.bind (Many.union (Many.one 1) (Many.fromList [1, 2, 3])) Many.one).toList
+#eval let f := Many.one; (Many.union (Many.bind (Many.one 1) f) (Many.bind (Many.fromList [1, 2, 3]) f)).toList
+
+theorem many_union_assoc_right : Many.union (Many.union xs ys) zs = Many.union xs (Many.union ys zs) := by
+  induction xs with
+  | none => rfl
+  | more x xs ih =>
+    repeat rw [many_union_more]
+    rw [ih]
+
+theorem many_bind_union_distr : Many.bind (Many.union xs ys) f = Many.union (Many.bind xs f) (Many.bind ys f) := by
+  induction xs with
+  | none => rfl
+  | more x xs ih =>
+    rw [many_bind_more]
+    rw [many_union_more]
+    rw [many_bind_more]
+    rw [ih]
+    rw [many_union_assoc_right]
+
+theorem many_monad_assoc : Many.bind (Many.bind v f) g = Many.bind v (fun x => Many.bind (f x) g) := by
+  induction v with
+  | none =>
+    repeat rw [many_bind_none_eq_none]
+  | more x xs ih =>
+    repeat rw [many_bind_more]
+    rw [many_bind_union_distr]
+    rw [ih]
+

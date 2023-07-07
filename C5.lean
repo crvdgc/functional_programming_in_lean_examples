@@ -215,3 +215,42 @@ deriving instance Repr for Prim
 open Expr Prim ToTrace in
 #eval evaluateM applyTraced (prim (other (trace times)) (prim (other (trace plus)) (const 1) (const 2)) (prim (other (trace minus)) (const 3) (const 4)))
 
+structure A where
+  f : Bool
+deriving Repr
+
+structure B where
+  f : Bool
+deriving Repr
+
+structure C extends A, B where
+  g : Bool
+deriving Repr
+
+structure AllLessThan where
+  num : Nat
+
+def AllLessThan.forM [Monad m] (coll : AllLessThan) (action : Nat → m Unit) : m Unit :=
+  let rec countdown : Nat → m Unit
+    | 0 => pure ()
+    | n + 1 => do
+      action n
+      countdown n
+  countdown coll.num
+
+instance : ForM m AllLessThan Nat where
+  forM := AllLessThan.forM
+
+def OptionT.exec [Applicative m] (action : OptionT m α) : m Unit :=
+  action *> pure ()
+
+def countToThree (n : Nat) : IO Unit :=
+  let nums : AllLessThan := ⟨n⟩
+  OptionT.exec (forM nums fun i => do
+    if i < 3 then failure else IO.println i)
+
+def parallelLoop := do
+  for x in ["currant", "gooseberry", "rowan"], y in [4:5] do
+    IO.println (x, y)
+
+#eval parallelLoop

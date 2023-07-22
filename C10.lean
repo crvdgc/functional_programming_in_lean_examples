@@ -1,3 +1,5 @@
+import mathlib
+
 def NonTail.length : List α → Nat
   | [] => 0
   | _ :: xs => NonTail.length xs + 1
@@ -106,4 +108,29 @@ def Array.find' (arr : Array α) (p : α → Bool) : Option (Nat × α) := Id.ru
 
 #eval #[1, 2, 3].find' (· > 1)
 
+def Array.reverse' (arr : Array α) : Array α := Id.run do
+  let mut res := Array.empty
+  for h : i in [:arr.size] do
+    have : arr.size - (i + 1) < arr.size := by
+       apply Nat.sub_lt_of_pos_le (i + 1) arr.size (Nat.succ_pos i)
+       exact (Membership.mem.upper h)
+    res := res.push arr[arr.size - i - 1]
+  return res
+
+#eval #[1, 2, 3].reverse'
+
+theorem Nat.zero_lt_succ' : (n : Nat) → 0 < n + 1 := Nat.zero_lt_succ
+
+theorem Nat.zero_le' : (n : Nat) → 0 <= n := Nat.zero_le
+
+theorem Nat.succ_sub_succ' : (n k : Nat) → (n + 1) - (k + 1) = n - k := Nat.succ_sub_succ
+
+theorem Nat.not_eq_zero_of_lt' (n k : Nat) : k < n → n ≠ 0 := Nat.not_eq_zero_of_lt
+
+theorem Nat.sub_self' : (n : Nat) → n - n = 0 := Nat.sub_self
+
+theorem Nat.lt_of_succ_lt' : (n k : Nat) → n + 1 < k → n < k := by
+  intros n k h
+  rw [Nat.add_one] at h
+  exact Nat.lt_of_succ_lt h
 

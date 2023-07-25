@@ -58,7 +58,6 @@ theorem non_tail_reverse_go_acc (xs : List α) : (acc : List α) →
   case cons x xs ih =>
     intro acc
     rw [ih (x :: acc)]
-    simp [List.append_assoc]
 
 theorem non_tail_reverse_eq_tail_reverse : @NonTail.reverse = @Tail.reverse := by
   funext α xs
@@ -133,4 +132,3 @@ theorem Nat.lt_of_succ_lt' : (n k : Nat) → n + 1 < k → n < k := by
   intros n k h
   rw [Nat.add_one] at h
   exact Nat.lt_of_succ_lt h
-

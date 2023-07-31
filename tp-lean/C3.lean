@@ -60,17 +60,81 @@ example : p ∧ (q ∨ r) ↔ (p ∧ q) ∨ (p ∧ r) := by
     | .inl ⟨hp, hq⟩ => exact ⟨hp, .inl hq⟩
     | .inr ⟨hp, hr⟩ => exact ⟨hp, .inr hr⟩
 
-example : p ∨ (q ∧ r) ↔ (p ∨ q) ∧ (p ∨ r) := sorry
+example : p ∨ (q ∧ r) ↔ (p ∨ q) ∧ (p ∨ r) := by
+  apply Iff.intro
+  · intro
+    | .inl hp => exact ⟨.inl hp, .inl hp⟩
+    | .inr ⟨hq, hr⟩ => exact ⟨.inr hq, .inr hr⟩
+  · intro
+    | ⟨.inl hp, _⟩ | ⟨_, .inl hp⟩ => exact .inl hp
+    | ⟨.inr hq, .inr hr⟩ => exact .inr ⟨hq, hr⟩
 
 -- other properties
-example : (p → (q → r)) ↔ (p ∧ q → r) := sorry
-example : ((p ∨ q) → r) ↔ (p → r) ∧ (q → r) := sorry
-example : ¬(p ∨ q) ↔ ¬p ∧ ¬q := sorry
-example : ¬p ∨ ¬q → ¬(p ∧ q) := sorry
-example : ¬(p ∧ ¬p) := sorry
-example : p ∧ ¬q → ¬(p → q) := sorry
-example : ¬p → (p → q) := sorry
-example : (¬p ∨ q) → (p → q) := sorry
-example : p ∨ False ↔ p := sorry
-example : p ∧ False ↔ False := sorry
-example : (p → q) → (¬q → ¬p) := sorry
+example : (p → (q → r)) ↔ (p ∧ q → r) := by
+  apply Iff.intro
+  · intro h ⟨p, q⟩
+    exact h p q
+  · intro h p q
+    exact h ⟨p, q⟩
+
+theorem or_implies : ((p ∨ q) → r) ↔ (p → r) ∧ (q → r) := by
+  apply Iff.intro
+  · intro h
+    apply And.intro
+    · intro p
+      exact h (.inl p)
+    · intro q
+      exact h (.inr q)
+  · intro ⟨hp, hq⟩
+    intro
+    | .inl p => exact hp p
+    | .inr q => exact hq q
+
+example : ((p ∨ q) → r) ↔ (p → r) ∧ (q → r) := or_implies p q r
+
+example : ¬(p ∨ q) ↔ ¬p ∧ ¬q := or_implies p q False
+
+example : ¬p ∨ ¬q → ¬(p ∧ q) := by
+  intro
+  | .inl hnp => intro ⟨hp, _⟩; contradiction
+  | .inr hnq => intro ⟨_, hq⟩; contradiction
+
+example : ¬(p ∧ ¬p) := by intro ⟨hp, hnp⟩; contradiction
+
+example : p ∧ ¬q → ¬(p → q) := by
+  intro ⟨hp, hnq⟩ hpq
+  have : q := hpq hp
+  contradiction
+
+example : ¬p → (p → q) := by
+  intro hnp hp
+  have : False := hnp hp
+  exact False.elim this
+
+example : (¬p ∨ q) → (p → q) := by
+  intro
+  | .inl hnp =>
+    intro hp
+    exact False.elim (hnp hp)
+  | .inr hq =>
+    intro
+    exact hq
+
+example : p ∨ False ↔ p := by
+  apply Iff.intro
+  · intro
+    | .inl hp => exact hp
+    | .inr hcontra => exact False.elim hcontra
+  · intro
+    apply Or.inl
+    assumption
+
+example : p ∧ False ↔ False := by
+  apply Iff.intro
+  · intro ⟨_, hcontra⟩; exact hcontra
+  · intro hcontra; exact False.elim hcontra
+
+example : (p → q) → (¬q → ¬p) := by
+  intro hpq hnq hp
+  apply hnq
+  exact (hpq hp)

@@ -138,3 +138,76 @@ example : (p → q) → (¬q → ¬p) := by
   intro hpq hnq hp
   apply hnq
   exact (hpq hp)
+
+theorem not_iff_neg : ¬(p ↔ ¬p) := by
+  intro ⟨hl, hr⟩
+  have hnp : ¬p := (fun hp : p => absurd hp (hl hp))
+  have hp : p := hr hnp
+  contradiction
+
+example : ¬(p ↔ ¬p) := not_iff_neg p
+
+open Classical
+
+variable (p q r : Prop)
+
+example : (p → q ∨ r) → ((p → q) ∨ (p → r)) := by
+  intro h
+  match (em p) with
+  | .inl hp =>
+    match (h hp) with
+    | .inl hq => exact (.inl fun _ => hq)
+    | .inr hr => exact (.inr fun _ => hr)
+  | .inr hnp =>
+    apply Or.inl
+    intro p
+    contradiction
+
+example : ¬(p ∧ q) → ¬p ∨ ¬q := by
+  intro hnpq
+  match (em p) with
+  | .inl hp =>
+    apply Or.inr
+    intro hq
+    exact hnpq ⟨hp, hq⟩
+  | .inr hnp => exact .inl hnp
+
+example : ¬(p → q) → p ∧ ¬q := by
+  intro h
+  match (em p) with
+  | .inl hp =>
+    apply And.intro hp
+    intro hq
+    apply h
+    intro
+    assumption
+  | .inr hnq =>
+    apply False.elim
+    apply h
+    intro hp
+    contradiction
+
+example : (p → q) → (¬p ∨ q) := by
+  intro hpq
+  match (em p) with
+  | .inl hp => exact .inr (hpq hp)
+  | .inr hnp => exact .inl hnp
+
+example : (¬q → ¬p) → (p → q) := by
+  intro h hp
+  match (em q) with
+  | .inl hq => assumption
+  | .inr hnq =>
+    have := h hnq
+    contradiction
+
+example : p ∨ ¬p := em p
+
+example : (((p → q) → p) → p) := by
+  intro h
+  match (em p) with
+  | .inl hp => exact hp
+  | .inr hnp =>
+    apply h
+    intro
+    contradiction
